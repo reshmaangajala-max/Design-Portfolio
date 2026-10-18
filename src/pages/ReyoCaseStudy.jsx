@@ -1,0 +1,1087 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion'
+import { reyo } from '../content/reyo.js'
+import { site } from '../data.js'
+import { Reveal } from '../components/Reveal.jsx'
+import { Sparkle, Arrow, Check } from '../components/Icons.jsx'
+import '../case-study.css'
+import FigmaScene from '../components/FigmaScene.jsx'
+
+const ease = [0.22, 1, 0.36, 1]
+
+// A laptop drawn in CSS. Drop a flat 16:9 screen export inside it.
+// Numbered call-outs drawn over the laptop: a dot on the UI, a line, and a label box.
+function Annotations({ notes }) {
+  const W = 22 // label width, % of screen
+  return (
+    <div className="annos" aria-hidden="true">
+      <svg className="annos__lines" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {notes.map((n, i) => {
+          const bx = n.box.side === 'left' ? n.box.x + (n.box.w || W) : n.box.x
+          const by = n.box.y + 4
+          return (
+            <motion.line
+              key={i}
+              x1={n.at.x}
+              y1={n.at.y}
+              x2={bx}
+              y2={by}
+              vectorEffect="non-scaling-stroke"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.9 + i * 0.15 }}
+            />
+          )
+        })}
+      </svg>
+      {notes.map((n, i) => (
+        <motion.span
+          key={`d${i}`}
+          className="annos__dot"
+          style={{ left: `${n.at.x}%`, top: `${n.at.y}%` }}
+          initial={{ scale: 0 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.8 + i * 0.15 }}
+        >
+          {i + 1}
+        </motion.span>
+      ))}
+      {notes.map((n, i) => (
+        <motion.div
+          key={`b${i}`}
+          className={`annos__box annos__box--${n.box.side}`}
+          style={{ left: `${n.box.x}%`, top: `${n.box.y}%`, width: `${n.box.w || W}%` }}
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.4, delay: 1.1 + i * 0.15 }}
+        >
+          <b>
+            <i>{i + 1}</i>
+            {n.title}
+          </b>
+          <span>{n.text}</span>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
+// A phone frame for mobile screens. Annotations can sit outside the screen (x < 0 or > 100).
+function Phone({ image, label, notes }) {
+  return (
+    <div className={`phone ${notes ? 'phone--annotated' : ''}`}>
+      <div className="phone__stage">
+        <div className="phone__body">
+          <span className="phone__island" aria-hidden="true" />
+          <div className="phone__screen">
+            {image ? (
+              <img src={image} alt={label} />
+            ) : (
+              <div className="phone__empty">
+                <span className="shot__badge">Add screen</span>
+                <span className="shot__label">{label}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        {notes && <Annotations notes={notes} />}
+      </div>
+    </div>
+  )
+}
+
+function Laptop({ image, label, fit = 'cover', pop, notes, scene }) {
+  return (
+    <div className="laptop">
+      <div className="laptop__lid">
+        <span className="laptop__cam" aria-hidden="true" />
+        <div className="laptop__stage">
+        <div className={`laptop__screen ${fit === 'contain' ? 'laptop__screen--canvas' : ''}`}>
+          {fit === 'figma' ? (
+            <FigmaScene image={image} label={label} scene={scene} />
+          ) : image ? (
+            <img src={image} alt={label} className={fit === 'contain' ? 'laptop__panel' : ''} />
+          ) : (
+            <div className="laptop__empty">
+              <span className="shot__badge">Add screen</span>
+              <span className="shot__label">{label}</span>
+            </div>
+          )}
+          <span className="laptop__glare" aria-hidden="true" />
+        </div>
+        {pop && (
+          <motion.img
+            className={`laptop__pop ${pop.flat ? 'laptop__pop--flat' : ''}`}
+            src={pop.image}
+            alt=""
+            aria-hidden="true"
+            style={{ left: `${pop.x}%`, top: `${pop.y}%`, width: `${pop.w}%` }}
+            initial={{ opacity: 0, scale: 0.62, x: '-50%', y: '-50%' }}
+            whileInView={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.7, ease, delay: 0.25 }}
+          />
+        )}
+        {notes && <Annotations notes={notes} />}
+        </div>
+      </div>
+      <div className="laptop__base" aria-hidden="true">
+        <span className="laptop__notch" />
+      </div>
+    </div>
+  )
+}
+
+// Shows the image when there is one, otherwise a labelled drop-zone placeholder.
+// Image that opens full-size on click, so dense tables stay readable.
+// Full-screen image viewer, portalled to <body> so transformed parents can't trap it.
+function Lightbox({ image, label, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+  return createPortal(
+    <motion.div
+      className="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <motion.img src={image} alt={label} initial={{ scale: 0.96 }} animate={{ scale: 1 }} transition={{ duration: 0.3 }} />
+      <button className="lightbox__close" onClick={onClose} aria-label="Close" autoFocus>
+        ×
+      </button>
+    </motion.div>,
+    document.body
+  )
+}
+
+// Image that opens full-size on click, so dense boards stay readable.
+function ZoomShot({ image, label, className }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button className={`shot shot--zoom ${className}`} onClick={() => setOpen(true)} aria-label={`Enlarge: ${label}`}>
+        <img src={image} alt={label} loading="lazy" />
+        <span className="shot__hint">Click to enlarge</span>
+      </button>
+      {open && <Lightbox image={image} label={label} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+function Shot({ image, label, ratio = '16 / 10', className = '', device, fit, pop, notes, scene }) {
+  if (device === 'laptop') return <Laptop image={image} label={label} fit={fit} pop={pop} notes={notes} scene={scene} />
+  if (device === 'phone') return <Phone image={image} label={label} notes={notes} />
+  if (image) return <ZoomShot image={image} label={label} className={className} />
+
+  return (
+    <div className={`shot shot--empty ${className}`} style={{ aspectRatio: ratio }}>
+      <span className="shot__badge">Add screen</span>
+      <span className="shot__label">{label}</span>
+    </div>
+  )
+}
+
+export function TopBar({ title = 'Reyo' }) {
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 30 })
+  return (
+    <header className="cs-bar">
+      <motion.span className="cs-bar__progress" style={{ scaleX }} />
+      <div className="cs-bar__inner">
+        <Link to="/" className="cs-bar__back">
+          <span aria-hidden="true">←</span> All work
+        </Link>
+        <span className="cs-bar__title">
+          {title} <Sparkle size={11} />
+        </span>
+        <a className="btn btn--violet cs-bar__cta" href={`mailto:${site.email}`}>
+          Let’s talk
+        </a>
+      </div>
+    </header>
+  )
+}
+
+export function Hero({ h = reyo.hero, visual }) {
+  return (
+    <section className="cs-hero">
+      <div className="wrap">
+        <motion.div className="cs-hero__chips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>
+          {h.chips.map((c) => (
+            <span key={c} className="cs-chip">
+              {c}
+            </span>
+          ))}
+          <span className="cs-chip cs-chip--badge">{h.badge}</span>
+        </motion.div>
+        <motion.h1 className="cs-hero__title" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease, delay: 0.1 }}>
+          {h.title}
+        </motion.h1>
+        <motion.p className="cs-hero__intro" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.25 }}>
+          {h.intro}
+        </motion.p>
+        <motion.dl className="cs-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }}>
+          {h.meta.map((m) => (
+            <div key={m.label}>
+              <dt>{m.label}</dt>
+              <dd>{m.value}</dd>
+            </div>
+          ))}
+        </motion.dl>
+      </div>
+
+      <motion.div className="wrap wrap--wide" initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease, delay: 0.45 }}>
+        {visual || <Shot image={h.image} label={h.imageLabel} device={h.device} fit={h.fit} className="shot--hero" />}
+      </motion.div>
+
+      <div className="wrap">
+        <div className="cs-stats">
+          {h.stats.map((s, i) => (
+            <Reveal key={s.label} delay={i * 0.08} className="cs-stat">
+              <strong>{s.value}</strong>
+              <span>{s.label}</span>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Problem() {
+  const p = reyo.problem
+  const tilt = [-3, 2, -1.5, 3]
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head">
+          <p className="eyebrow">{p.eyebrow}</p>
+          <h2 className="section-title">{p.title}</h2>
+        </Reveal>
+        <div className="pcards">
+          {p.cards.map((c, i) => (
+            <motion.div
+              key={c.kicker}
+              className={`pcard ${c.highlight ? 'pcard--hl' : ''}`}
+              style={{ rotate: tilt[i] }}
+              initial={{ y: 30, opacity: 0.35 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true, amount: 0.4 }}
+              whileHover={{ rotate: 0, y: -6 }}
+              transition={{ duration: 0.6, ease, delay: i * 0.1 }}
+            >
+              <span className="pcard__kicker">{c.kicker}</span>
+              <p>{c.text}</p>
+            </motion.div>
+          ))}
+        </div>
+        <Reveal className="pfoot">
+          <div className="pfoot__stat">
+            <strong>{p.stat.value}</strong>
+            <span>{p.stat.text}</span>
+          </div>
+          <blockquote className="pfoot__quote">
+            <p>{p.quote.text}</p>
+            <cite>{p.quote.who}</cite>
+          </blockquote>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+function Loop() {
+  const l = reyo.loop
+  return (
+    <section className="cs-section cs-section--tint">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{l.eyebrow}</p>
+          <h2 className="section-title">{l.title}</h2>
+        </Reveal>
+        <div className="loop">
+          {l.steps.map((s, i) => (
+            <Reveal key={s.name} delay={i * 0.1} className="loop__step">
+              <span className="loop__num">{i + 1}</span>
+              <h3>{s.name}</h3>
+              <p>{s.text}</p>
+            </Reveal>
+          ))}
+          <svg className="loop__line" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
+            <motion.path
+              d="M60 20 H940"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="6 8"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.4, ease: 'easeInOut' }}
+            />
+          </svg>
+        </div>
+        <p className="loop__back">
+          <span aria-hidden="true">↺</span> and every find teaches it what to bring back next time
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function DecisionTable({ rows, image, label }) {
+  const [open, setOpen] = useState(0)
+  const [full, setFull] = useState(false)
+  const r = rows[open]
+  return (
+    <div className="dtable">
+      <div className="dtable__head">
+        <span>Insight</span>
+        <span>Decision</span>
+        {image && (
+          <button className="dtable__full" onClick={() => setFull(true)}>
+            View full table ↗
+          </button>
+        )}
+      </div>
+      <ul className="dtable__rows">
+        {rows.map((row, i) => (
+          <li key={row.insight} className={i === open ? 'is-open' : ''}>
+            <button className="dtable__row" onClick={() => setOpen(i)} aria-expanded={i === open}>
+              <span className="dtable__insight">{row.insight}</span>
+              <span className="dtable__decision">{row.decision}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={open}
+          className="dtable__detail"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.25 }}
+        >
+          <p className="dtable__what">{r.detail}</p>
+          <div className="dtable__cols">
+            <div>
+              <span>Chose not to</span>
+              <p>{r.not}</p>
+            </div>
+            <div>
+              <span>How I’d measure it</span>
+              <p>{r.measure}</p>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      {image && full && <Lightbox image={image} label={label} onClose={() => setFull(false)} />}
+    </div>
+  )
+}
+
+const berryRamp = ['#FBE7EC', '#F5B8C8', '#F2A9BD', '#F0A3B7', '#E88AA4', '#A63D5B', '#8E2F4C', '#7A2841', '#3D2330']
+const keyColours = [
+  { name: 'Berry', token: 'berry/700', hex: '#8E2F4C' },
+  { name: 'Cream', token: 'neutral/25', hex: '#FAF5F4' },
+  { name: 'Ink', token: 'neutral/ink', hex: '#2A2320' },
+  { name: 'Peach', token: 'peach/200', hex: '#F7C9A8' },
+]
+const statusColours = ['#4F6136', '#E8B455', '#B42318']
+const typeScale = [
+  { token: 'display/32-bold', size: 32, weight: 700, track: '-0.01em', sample: 'Nice find.' },
+  { token: 'heading/20-medium', size: 20, weight: 500 },
+  { token: 'body/14-regular', size: 14, weight: 400 },
+  { token: 'caption/11-regular', size: 11, weight: 400 },
+]
+const spaceScale = [4, 8, 12, 16, 24, 32, 48, 64]
+const radiusScale = [
+  { name: 'xs', v: 4 },
+  { name: 'sm', v: 8 },
+  { name: 'md', v: 12 },
+  { name: 'lg', v: 16 },
+  { name: 'pill', v: 999 },
+]
+
+function SystemSnapshot({ frames }) {
+  const [view, setView] = useState(null)
+  return (
+    <div className="ds">
+      <div className="ds__head">
+        <span className="ds__title">Reyo foundations</span>
+        <span className="ds__links">
+          {frames.map((f) => (
+            <button key={f.name} onClick={() => setView(f)}>
+              {f.name} ↗
+            </button>
+          ))}
+        </span>
+      </div>
+
+      <div className="ds__grid">
+        <section className="ds__tile ds__tile--colour">
+          <span className="ds__label">Colour</span>
+          <div className="ds__keys">
+            {keyColours.map((c) => (
+              <div key={c.token} className="ds__key">
+                <span className="ds__swatch" style={{ background: c.hex }} />
+                <b>{c.name}</b>
+                <small>{c.hex}</small>
+              </div>
+            ))}
+          </div>
+          <div className="ds__ramp" aria-label="Berry ramp, 50 to 950">
+            {berryRamp.map((h) => (
+              <span key={h} style={{ background: h }} />
+            ))}
+          </div>
+          <div className="ds__status">
+            {statusColours.map((h, i) => (
+              <span key={h} style={{ background: h }} />
+            ))}
+            <small>Success · Warning · Error</small>
+          </div>
+        </section>
+
+        <section className="ds__tile ds__tile--type">
+          <span className="ds__label">Type · DM Sans</span>
+          {typeScale.map((t) => (
+            <div key={t.token} className="ds__type">
+              <span style={{ fontSize: t.size, fontWeight: t.weight, letterSpacing: t.track || 0 }}>{t.sample || 'Note to future you'}</span>
+              <small>{t.token}</small>
+            </div>
+          ))}
+        </section>
+
+        <section className="ds__tile ds__tile--space">
+          <span className="ds__label">Spacing · 4px rhythm</span>
+          <div className="ds__space">
+            {spaceScale.map((v) => (
+              <div key={v}>
+                <span style={{ width: v * 1.1 }} />
+                <small>{v}</small>
+              </div>
+            ))}
+          </div>
+          <span className="ds__label ds__label--sub">Radius</span>
+          <div className="ds__radius">
+            {radiusScale.map((r) => (
+              <div key={r.name}>
+                <span style={{ borderRadius: Math.min(r.v, 999) }} />
+                <small>{r.name}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="ds__tile ds__tile--modes">
+          <span className="ds__label">Light + dark</span>
+          <div className="ds__modes">
+            <div className="ds__card ds__card--light">
+              <b>Saved. Nice find.</b>
+              <p>A useful thought, ready when you need it.</p>
+              <span className="ds__chip">Colour &amp; type</span>
+            </div>
+            <div className="ds__card ds__card--dark">
+              <b>Saved. Nice find.</b>
+              <p>A useful thought, ready when you need it.</p>
+              <span className="ds__chip">Colour &amp; type</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      {view && <Lightbox image={view.image} label={`Reyo design system: ${view.name}`} onClose={() => setView(null)} />}
+    </div>
+  )
+}
+
+function QuestionCards({ cards, variant }) {
+  return (
+    <div className={`qcards qcards--${variant || 'q'}`}>
+      {cards.map((c, i) => (
+        <motion.div
+          key={c.title}
+          className="qcard"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease, delay: i * 0.07 }}
+        >
+          <span className="qcard__num">{c.k || String(i + 1).padStart(2, '0')}</span>
+          <strong>{c.title}</strong>
+          {c.text && <p>{c.text}</p>}
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
+function Compare({ data }) {
+  return (
+    <div className="compare">
+      <div className="compare__col">
+        <span className="compare__label">What already exists</span>
+        <ul>
+          {data.exists.map((x) => (
+            <li key={x.title}>
+              <strong>{x.title}</strong>
+              <span>{x.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="compare__col compare__col--gap">
+        <span className="compare__label">What’s missing</span>
+        <ul>
+          {data.missing.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function ResearchBoard({ data }) {
+  return (
+    <div className="rboard">
+      <div className="rboard__stats">
+        {data.stats.map((x, i) => (
+          <motion.div key={x.label} className="rboard__stat" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease, delay: i * 0.06 }}>
+            <strong>{x.value}</strong>
+            <span>{x.label}</span>
+            <small>{x.sub}</small>
+          </motion.div>
+        ))}
+      </div>
+      <span className="rboard__label">What kept coming up</span>
+      <ol className="rboard__list">
+        {data.findings.map((f, i) => (
+          <motion.li key={f.title} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.35, ease, delay: 0.12 + i * 0.07 }}>
+            <span>{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <strong>{f.title}</strong>
+              <p>{f.text}</p>
+            </div>
+          </motion.li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+const MARK = { y: '✓', p: '~', n: '✕' }
+const MARK_LABEL = { y: 'Yes', p: 'Partly', n: 'No' }
+
+function MatrixTable({ m }) {
+  const Row = ({ r, us }) => (
+    <tr className={us ? 'is-us' : ''}>
+      <th scope="row">
+        <strong>{r.name}</strong>
+        <span>{r.type}</span>
+      </th>
+      {r.v.map((v, i) => (
+        <td key={i}>
+          <span className={`mx mx--${v}`} aria-label={MARK_LABEL[v]}>
+            {MARK[v]}
+          </span>
+        </td>
+      ))}
+    </tr>
+  )
+  return (
+    <div className="mtable">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">App</th>
+            {m.cols.map((c) => (
+              <th key={c} scope="col">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {m.rows.map((r) => (
+            <Row key={r.name} r={r} />
+          ))}
+          {m.us && <Row r={m.us} us />}
+        </tbody>
+      </table>
+      <p className="mtable__key">
+        <span className="mx mx--y">✓</span> Yes <span className="mx mx--p">~</span> Partly <span className="mx mx--n">✕</span> No
+      </p>
+    </div>
+  )
+}
+
+function CompTable({ t }) {
+  return (
+    <div className="ctable">
+      <table>
+        <thead>
+          <tr>
+            {t.cols.map((c) => (
+              <th key={c} scope="col">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {t.rows.map((r) => (
+            <tr key={r.name}>
+              <th scope="row">
+                <strong>{r.name}</strong>
+                <span>{r.type}</span>
+              </th>
+              <td>{r.does}</td>
+              <td className="ctable__gap">{r.stops}</td>
+            </tr>
+          ))}
+          {t.us && (
+            <tr className="is-us">
+              <th scope="row">
+                <strong>{t.us.name}</strong>
+                <span>{t.us.type}</span>
+              </th>
+              <td colSpan={2}>
+                {t.us.does}. {t.us.stops}.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+export function StepVisual({ s }) {
+  if (s.table) return <CompTable t={s.table} />
+  if (s.matrix) return <MatrixTable m={s.matrix} />
+  if (s.research) return <ResearchBoard data={s.research} />
+  if (s.questions) return <QuestionCards cards={s.questions} />
+  if (s.jobs) return <QuestionCards cards={s.jobs} variant="jobs" />
+  if (s.compare) return <Compare data={s.compare} />
+  if (s.system) return <SystemSnapshot frames={s.system} />
+  if (s.decisions) return <DecisionTable rows={s.decisions} image={s.image} label={s.imageLabel} />
+  if (s.notes) return <QuoteWall notes={s.notes} label={s.imageLabel} />
+  return <Shot image={s.image} label={s.imageLabel} ratio="4 / 3" />
+}
+
+function useIsNarrow(q = '(max-width: 960px)') {
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.matchMedia(q).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(q)
+    const on = () => setM(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [q])
+  return m
+}
+
+// Pinned scrollytelling: the section is tall, the stage stays put,
+// and scroll progress picks ONE step. Left text and right visual swap together.
+export function Process({ pr = reyo.process }) {
+  const n = pr.steps.length
+  const narrow = useIsNarrow()
+  const ref = useRef(null)
+  const [active, setActive] = useState(0)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+
+  useEffect(
+    () =>
+      scrollYProgress.on('change', (v) => {
+        setActive(Math.min(n - 1, Math.max(0, Math.floor(v * n))))
+      }),
+    [scrollYProgress, n]
+  )
+
+  const goTo = (i) => {
+    const el = ref.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY
+    const travel = el.offsetHeight - window.innerHeight
+    window.scrollTo({ top: top + ((i + 0.5) / n) * travel, behavior: 'smooth' })
+  }
+
+  if (narrow) {
+    return (
+      <section className="cs-section process" id="process">
+        <div className="wrap">
+          <p className="eyebrow">{pr.eyebrow}</p>
+          <div className="process__list">
+            {pr.steps.map((s, i) => (
+              <div key={s.tag} className="process__step">
+                <span className="process__num">{String(i + 1).padStart(2, '0')}</span>
+                <div className="pstep">
+                  <StepText s={s} />
+                </div>
+                <StepVisual s={s} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const step = pr.steps[active]
+  return (
+    <section className="process process--pinned" id="process" ref={ref} style={{ height: `calc(${n} * 100vh)` }}>
+      <div className="process__pin">
+        <div className="wrap process__frame">
+          <div className="process__top">
+            <p className="eyebrow">{pr.eyebrow}</p>
+            <ol className="process__nav" aria-label="Steps">
+              {pr.steps.map((s, i) => (
+                <li key={s.tag} className={i === active ? 'is-on' : ''}>
+                  <button onClick={() => goTo(i)} aria-label={s.tag} aria-current={i === active ? 'step' : undefined}>
+                    {String(i + 1).padStart(2, '0')}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="process__grid">
+            <div className="process__text">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active}
+                  className="pstep"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease }}
+                >
+                  <StepText s={step} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            <div className="process__visual">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active}
+                  className="process__visual-inner"
+                  initial={{ opacity: 0, scale: 0.985 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.99 }}
+                  transition={{ duration: 0.22, ease }}
+                >
+                  <StepVisual s={step} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+const tilts = [-2, 1.5, -1, 2, 1, -1.8, 1.6, -1.2]
+
+function QuoteWall({ notes, label }) {
+  return (
+    <figure className="qwall" aria-label={label}>
+      {notes.map((n, i) => (
+        <motion.blockquote
+          key={i}
+          className={`qnote sticky--${n.color}`}
+          style={{ rotate: tilts[i % tilts.length] }}
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 20, delay: i * 0.05 }}
+        >
+          <span className="qnote__pin" aria-hidden="true" />
+          <footer className="qnote__who">
+            {n.who} <span>{n.source}</span>
+          </footer>
+          <p className="qnote__quote">“{n.quote}”</p>
+        </motion.blockquote>
+      ))}
+    </figure>
+  )
+}
+
+function StepText({ s, i }) {
+  return (
+    <>
+      <h3 className="section-title pstep__heading">{s.tag}</h3>
+      <ul className="pstep__points">
+        {s.points.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </ul>
+      <div className="pstep__result">
+        {s.resultLabel && <span>{s.resultLabel}</span>}
+        <p>{s.result}</p>
+      </div>
+    </>
+  )
+}
+
+export function Solution({ so = reyo.solution }) {
+  return (
+    <section className="cs-section solution">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow eyebrow--light">{so.eyebrow}</p>
+          <h2 className="section-title">{so.title}</h2>
+        </Reveal>
+
+        <div className="moments">
+          {so.moments.map((m) => (
+            <article key={m.label} className={`moment ${m.big ? 'moment--big' : ''}`}>
+              <Reveal className="moment__head">
+                <span className="moment__label">{m.label}</span>
+                <h3 className="moment__title">{m.title}</h3>
+                <p className="moment__insight">{m.insight}</p>
+              </Reveal>
+              <Reveal>
+                <Shot image={m.image} label={m.imageLabel} ratio={m.imageRatio} device={m.device} fit={m.fit} pop={m.pop} scene={m.scene} notes={m.notes?.[0]?.at ? m.notes : undefined} className="shot--dark" />
+              </Reveal>
+              <ol className={`notes notes--${m.notes.length} ${m.notes[0]?.at ? 'notes--annotated' : ''}`}>
+                {m.notes.map((n, i) => (
+                  <Reveal as="li" key={n.title} delay={i * 0.06} className="note-item">
+                    <span className="note-item__num">{i + 1}</span>
+                    <div>
+                      <strong>{n.title}</strong>
+                      <p>{n.text}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </ol>
+            </article>
+          ))}
+
+          {so.chambers && (
+          <article className="chambers">
+            <Reveal className="chambers__copy">
+              <span className="moment__label">Organised by what you build</span>
+              <blockquote>
+                <p>{so.chambers.quote}</p>
+                <cite>{so.chambers.who}</cite>
+              </blockquote>
+              <p className="chambers__text">{so.chambers.text}</p>
+            </Reveal>
+            <Reveal>
+              <Shot image={so.chambers.image} label={so.chambers.imageLabel} ratio="4 / 3" className="shot--dark" />
+            </Reveal>
+          </article>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Validation() {
+  const v = reyo.validation
+  const pct = v.score.value / v.score.max
+  const C = 2 * Math.PI * 52
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head">
+          <p className="eyebrow">{v.eyebrow}</p>
+          <h2 className="section-title">{v.title}</h2>
+        </Reveal>
+        <div className="valid">
+          <Reveal className="valid__score">
+            <svg viewBox="0 0 120 120" className="ring" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" className="ring__track" />
+              <motion.circle
+                cx="60"
+                cy="60"
+                r="52"
+                className="ring__fill"
+                strokeDasharray={C}
+                initial={{ strokeDashoffset: C }}
+                whileInView={{ strokeDashoffset: C * (1 - pct) }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.4, ease }}
+              />
+            </svg>
+            <div className="valid__num">
+              <strong>{v.score.value}</strong>
+              <span>/ {v.score.max}</span>
+            </div>
+            <p className="valid__src">{v.score.source}</p>
+            <p className="valid__quote">{v.quote}</p>
+          </Reveal>
+          <div className="valid__changed">
+            <p className="valid__label">What feedback changed</p>
+            {v.changed.map((c, i) => (
+              <Reveal key={c.title} delay={i * 0.08} className="valid__item">
+                <Check />
+                <div>
+                  <strong>{c.title}</strong>
+                  <p>{c.text}</p>
+                </div>
+              </Reveal>
+            ))}
+            <p className="valid__next">{v.next}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Tradeoffs() {
+  const t = reyo.tradeoffs
+  return (
+    <section className="cs-section cs-section--tint">
+      <div className="wrap">
+        <Reveal className="cs-head">
+          <p className="eyebrow">{t.eyebrow}</p>
+          <h2 className="section-title">{t.title}</h2>
+        </Reveal>
+        <div className="trade">
+          <Reveal className="trade__card">
+            <h3>Challenges I faced</h3>
+            <ul>
+              {t.challenges.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </Reveal>
+          <Reveal className="trade__card trade__card--violet" delay={0.1}>
+            <h3>Trade-offs I chose</h3>
+            <ul>
+              {t.choices.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Outcome() {
+  const o = reyo.outcome
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{o.eyebrow}</p>
+          <h2 className="section-title">{o.title}</h2>
+        </Reveal>
+        <div className="ba">
+          <Reveal className="ba__card ba__card--before">
+            <span>Before</span>
+            <p>{o.before}</p>
+          </Reveal>
+          <span className="ba__arrow" aria-hidden="true">
+            <Arrow />
+          </span>
+          <Reveal className="ba__card ba__card--after" delay={0.15}>
+            <span>After</span>
+            <p>{o.after}</p>
+          </Reveal>
+        </div>
+        <div className="status-cols">
+          <Reveal className="status-col">
+            <h3>
+              <span className="status__dot status__dot--sm" /> Live now
+            </h3>
+            <ul>
+              {o.live.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </Reveal>
+          <Reveal className="status-col" delay={0.1}>
+            <h3>
+              <span className="dot-soon" /> Coming next
+            </h3>
+            <ul>
+              {o.soon.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export function Learnings({ items = reyo.learnings }) {
+  return (
+    <section className="cs-section cs-section--tint">
+      <div className="wrap">
+        <Reveal className="cs-head">
+          <p className="eyebrow">Reflection</p>
+          <h2 className="section-title">What I learned</h2>
+        </Reveal>
+        <div className="learn">
+          {items.map((l, i) => (
+            <Reveal key={l.title} delay={i * 0.08} className="learn__card">
+              <span className="learn__num">0{i + 1}</span>
+              <h3>{l.title}</h3>
+              <p>{l.text}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export function NextUp({ to = '/work/tara', title = 'Tara', sub = 'Life admin, handled before it becomes a deadline.' }) {
+  const navigate = useNavigate()
+  return (
+    <section className="cs-next">
+      <div className="wrap cs-next__inner">
+        <p className="eyebrow eyebrow--light">Next project</p>
+        <button className="cs-next__title" onClick={() => navigate(to)}>
+          {title} <Arrow />
+        </button>
+        <p className="cs-next__sub">{sub}</p>
+        <Link to="/" className="cs-next__home">
+          ← Back to all work
+        </Link>
+      </div>
+    </section>
+  )
+}
+
+export default function ReyoCaseStudy() {
+  return (
+    <>
+      <TopBar />
+      <main className="cs">
+        <Hero />
+        <Problem />
+        <Loop />
+        <Process />
+        <Solution />
+        <Validation />
+        <Tradeoffs />
+        <Outcome />
+        <Learnings />
+        <NextUp />
+      </main>
+    </>
+  )
+}
