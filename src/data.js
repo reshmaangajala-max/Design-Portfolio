@@ -70,6 +70,25 @@ export const projects = [
     tone: 'lilac',
     cta: 'Read case study',
   },
+  {
+    id: 'shuchify',
+    route: '/work/shuchify',
+    eyebrow: 'Concept · B2B + GovTech · AI',
+    title: 'Shuchify',
+    headline: 'What does the kitchen behind your favourite restaurant actually look like?',
+    summary:
+      'Kitchens get dirty every day, and when food goes bad, nobody can prove what happened. Shuchify gives restaurants, diners and inspectors daily, AI-checked proof from the kitchen.',
+    stats: [
+      { value: '1 in 5', label: 'samples failed' },
+      { value: '3', label: 'users, one loop' },
+      { value: 'AI', label: 'checks daily' },
+    ],
+    tags: ['Systems thinking', 'B2B', 'GovTech', 'AI UX'],
+    image: null,
+    mock: 'shuchify',
+    tone: 'sage',
+    cta: 'Read case study',
+  },
 ]
 
 // Each key shows a "proof" line when pressed — real evidence, not buzzwords.

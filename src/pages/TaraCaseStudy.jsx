@@ -89,7 +89,7 @@ export default function TaraCaseStudy() {
         <Solution so={tara.solution} />
         <Outcome />
         <Learnings items={tara.learnings} />
-        <NextUp to="/work/reyo" title="Reyo" sub="The right save, at the right moment, without leaving Figma." />
+        <NextUp to="/work/shuchify" title="Shuchify" sub="Making kitchen hygiene visible, every single day." />
       </main>
     </>
   )

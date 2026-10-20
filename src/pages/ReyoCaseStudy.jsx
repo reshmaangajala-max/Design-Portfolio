@@ -235,6 +235,13 @@ export function Hero({ h = reyo.hero, visual }) {
         <motion.p className="cs-hero__intro" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.25 }}>
           {h.intro}
         </motion.p>
+        {h.features && (
+          <motion.ul className="cs-features" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease, delay: 0.33 }}>
+            {h.features.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </motion.ul>
+        )}
         <motion.dl className="cs-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }}>
           {h.meta.map((m) => (
             <div key={m.label}>
@@ -557,6 +564,33 @@ function Compare({ data }) {
   )
 }
 
+// Affinity map: research notes clustered into themes, each with the insight it led to.
+function AffinityMap({ groups }) {
+  return (
+    <div className="amap">
+      {groups.map((g, i) => (
+        <motion.div
+          key={g.theme}
+          className={`amap__group amap__group--${g.color}`}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease, delay: i * 0.07 }}
+        >
+          <div className="amap__head">
+            <span>{String(i + 1).padStart(2, '0')}</span>
+            <strong>{g.theme}</strong>
+          </div>
+          <ul className="amap__notes">
+            {g.notes.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
 function ResearchBoard({ data }) {
   return (
     <div className="rboard">
@@ -609,7 +643,7 @@ function MatrixTable({ m }) {
       <table>
         <thead>
           <tr>
-            <th scope="col">App</th>
+            <th scope="col">{m.firstCol || 'App'}</th>
             {m.cols.map((c) => (
               <th key={c} scope="col">
                 {c}
@@ -675,6 +709,7 @@ function CompTable({ t }) {
 export function StepVisual({ s }) {
   if (s.table) return <CompTable t={s.table} />
   if (s.matrix) return <MatrixTable m={s.matrix} />
+  if (s.affinity) return <AffinityMap groups={s.affinity} />
   if (s.research) return <ResearchBoard data={s.research} />
   if (s.questions) return <QuestionCards cards={s.questions} />
   if (s.jobs) return <QuestionCards cards={s.jobs} variant="jobs" />
@@ -723,8 +758,9 @@ export function Process({ pr = reyo.process }) {
 
   if (narrow) {
     return (
-      <section className="cs-section process" id="process">
+      <section className="cs-section process" id={pr.id || 'process'}>
         <div className="wrap">
+          {pr.phase && <span className="process__phase">{pr.phase}</span>}
           <p className="eyebrow">{pr.eyebrow}</p>
           <div className="process__list">
             {pr.steps.map((s, i) => (
@@ -744,11 +780,14 @@ export function Process({ pr = reyo.process }) {
 
   const step = pr.steps[active]
   return (
-    <section className="process process--pinned" id="process" ref={ref} style={{ height: `calc(${n} * 100vh)` }}>
+    <section className="process process--pinned" id={pr.id || 'process'} ref={ref} style={{ height: `calc(${n} * 100vh)` }}>
       <div className="process__pin">
         <div className="wrap process__frame">
           <div className="process__top">
-            <p className="eyebrow">{pr.eyebrow}</p>
+            <div className="process__labels">
+              {pr.phase && <span className="process__phase">{pr.phase}</span>}
+              <p className="eyebrow">{step.eyebrow || pr.eyebrow}</p>
+            </div>
             <ol className="process__nav" aria-label="Steps">
               {pr.steps.map((s, i) => (
                 <li key={s.tag} className={i === active ? 'is-on' : ''}>
@@ -797,7 +836,7 @@ export function Process({ pr = reyo.process }) {
 
 const tilts = [-2, 1.5, -1, 2, 1, -1.8, 1.6, -1.2]
 
-function QuoteWall({ notes, label }) {
+export function QuoteWall({ notes, label }) {
   return (
     <figure className="qwall" aria-label={label}>
       {notes.map((n, i) => (

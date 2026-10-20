@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { projects } from '../data.js'
 import { Reveal } from './Reveal.jsx'
 import { Arrow, ArrowUpRight } from './Icons.jsx'
+import { KitchenPhone } from './ShuchifyMock.jsx'
 
 export function TaraMock({ image }) {
   // A small phone mock so Tara has a visual until the real screens are ready.
@@ -107,7 +108,15 @@ function ProjectCard({ p, index }) {
               <span />
               <span />
             </div>
-            {p.image ? <img src={p.image} alt={p.imageAlt} loading="lazy" /> : <TaraMock image={p.phoneImage} />}
+            {p.image ? (
+              <img src={p.image} alt={p.imageAlt} loading="lazy" />
+            ) : p.mock === 'shuchify' ? (
+              <div className="sx-card">
+                <KitchenPhone />
+              </div>
+            ) : (
+              <TaraMock image={p.phoneImage} />
+            )}
           </div>
 
           <AnimatePresence>
