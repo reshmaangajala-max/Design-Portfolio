@@ -85,7 +85,7 @@ export const projects = [
     ],
     tags: ['Systems thinking', 'B2B', 'GovTech', 'AI UX'],
     image: null,
-    mock: 'shuchify',
+    phoneImage: 'images/shuchify/m1-prompt.webp',
     tone: 'sage',
     cta: 'Read case study',
   },

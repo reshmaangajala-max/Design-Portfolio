@@ -262,6 +262,64 @@ export const shuchify = {
     ],
   },
 
+  // The design: phone screens with annotations (same component as Tara).
+  solution: {
+    eyebrow: 'The surprise check-in',
+    title: 'The solution',
+    moments: [
+      {
+        label: 'Moment 01',
+        title: 'A surprise, with the clock already running',
+        insight: 'Kitchens behave when someone is watching. So the check-in arrives unannounced, outside rush hours.',
+        image: 'images/shuchify/m1-prompt.webp',
+        imageLabel: 'Surprise check-in · Inside your fridge',
+        device: 'phone',
+        notes: [
+          { title: 'Starts when it’s sent', text: 'The timer runs from the alert, not from when the app is opened. No time to tidy up first.', at: { x: 34, y: 19.9 }, box: { x: -84, y: 14.9, side: 'left', w: 72 } },
+          { title: 'AI picks the spot', text: 'Fridge today, drain tomorrow. Staff can’t keep one clean corner for the camera.', at: { x: 70, y: 40 }, box: { x: 112, y: 35, side: 'right', w: 72 } },
+          { title: 'Snooze doesn’t stop the clock', text: 'One reminder, inside the same window. Delaying never buys extra time.', at: { x: 50, y: 92.7 }, box: { x: -84, y: 87.7, side: 'left', w: 72 } },
+        ],
+      },
+      {
+        label: 'Moment 02',
+        title: 'Live camera, nothing to fake',
+        insight: 'No gallery, no old videos. Just fifteen seconds of what’s there right now.',
+        image: 'images/shuchify/m2-camera.webp',
+        imageLabel: 'Camera · Recording the fridge',
+        device: 'phone',
+        notes: [
+          { title: 'Short on purpose', text: 'Fifteen seconds, top shelf to bottom. Long enough to see, short enough not to resent.', at: { x: 69, y: 16 }, box: { x: 112, y: 11, side: 'right', w: 72 } },
+          { title: 'Torch for dark corners', text: 'Fridges and store rooms are dim. Hidden areas count as not checked.', at: { x: 20, y: 79.8 }, box: { x: -84, y: 74.8, side: 'left', w: 72 } },
+          { title: 'Record only, no upload', text: 'There’s no gallery button. Proof has to be live.', at: { x: 61, y: 79.8 }, box: { x: 112, y: 74.8, side: 'right', w: 72 } },
+        ],
+      },
+      {
+        label: 'Moment 03',
+        title: 'It shows its work',
+        insight: 'Five checks, each ticked in plain words. This is what diners see by lunch.',
+        image: 'images/shuchify/m3-allclear.webp',
+        imageLabel: 'Result · All clear',
+        device: 'phone',
+        notes: [
+          { title: 'Every check has a name', text: 'Recorded by Suresh at 9:42 am. Accountability without blame.', at: { x: 31.4, y: 53.7 }, box: { x: -84, y: 48.7, side: 'left', w: 72 } },
+          { title: 'Things that can’t be faked fast', text: 'Covered food, storage, temperature, old stock. Not just gloves and caps.', at: { x: 82.4, y: 76.2 }, box: { x: 112, y: 71.2, side: 'right', w: 72 } },
+        ],
+      },
+      {
+        label: 'Moment 04',
+        title: 'Help, not a penalty',
+        insight: 'When something’s wrong, it says what, why it matters, and how long there is to fix it.',
+        image: 'images/shuchify/m4-issue.webp',
+        imageLabel: 'Result · 1 thing to fix',
+        device: 'phone',
+        notes: [
+          { title: 'Explains the why', text: 'Not “violation”. Raw meat drips, so it goes on the bottom shelf.', at: { x: 12.8, y: 67.3 }, box: { x: -84, y: 62.3, side: 'left', w: 72 } },
+          { title: 'A window to fix it', text: 'Re-record by 10:30 am and the score recovers. The goal is a clean fridge, not a fine.', at: { x: 75, y: 81.3 }, box: { x: 112, y: 76.3, side: 'right', w: 72 } },
+        ],
+      },
+    ],
+  },
+
   problem: {
     eyebrow: 'The problem',
     lines: ['Kitchens get dirty every day. Inspectors visit a few times a year.', 'In between, nothing can be proven, so no one is held accountable.'],

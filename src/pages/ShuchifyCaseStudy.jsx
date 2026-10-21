@@ -1,7 +1,7 @@
 import { shuchify } from '../content/shuchify.js'
-import { Reveal } from '../components/Reveal.jsx'
 import ShuchifyTrio from '../components/ShuchifyMock.jsx'
-import { TopBar, Hero, NextUp, Process } from './ReyoCaseStudy.jsx'
+import { Reveal } from '../components/Reveal.jsx'
+import { TopBar, Hero, NextUp, Process, Solution } from './ReyoCaseStudy.jsx'
 import '../case-study.css'
 
 function Behind() {
@@ -191,7 +191,7 @@ function ComingNext() {
       <div className="wrap">
         <Reveal className="sx-soon">
           <p className="eyebrow">Case study in progress</p>
-          <p>Next: how the system works, the key screens, and what happens if a kitchen tries to cheat.</p>
+          <p>Next: stock logging, what diners see inside their delivery app, and what happens if a kitchen tries to cheat.</p>
         </Reveal>
       </div>
     </section>
@@ -212,6 +212,7 @@ export default function ShuchifyCaseStudy() {
         <People />
         <Process pr={shuchify.ideation} />
         <Decisions />
+        <Solution so={shuchify.solution} />
         <ComingNext />
         <NextUp to="/work/reyo" title="Reyo" sub="The right save, at the right moment, without leaving Figma." />
       </main>
