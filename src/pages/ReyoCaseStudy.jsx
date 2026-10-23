@@ -518,6 +518,117 @@ function SystemSnapshot({ frames }) {
   )
 }
 
+
+const taraKeys = [
+  { name: 'Night', hex: '#110B16' },
+  { name: 'Surface', hex: '#1C1321' },
+  { name: 'Plum', hex: '#592670' },
+  { name: 'Orchid', hex: '#C785F2' },
+]
+const taraRamp = ['#F3E6FC', '#E2C6F9', '#C785F2', '#B682D5', '#9A5BC0', '#7D3B9C', '#592670', '#34213E', '#1C1321']
+const taraType = [
+  { token: 'display/32 · Fraunces', cls: 'serif', size: 30, weight: 600, sample: 'Your horizon' },
+  { token: 'title/22 · Fraunces', cls: 'serif', size: 21, weight: 600, sample: 'Insurance renewal' },
+  { token: 'body/16 · Figtree', size: 15, weight: 400, sample: 'Vehicle · ICICI Lombard' },
+  { token: 'label/11 · Figtree', size: 11, weight: 500, track: '0.14em', upper: true, sample: 'Next up · in 7 days' },
+]
+const taraRadius = [
+  { name: 'sm', v: 8 },
+  { name: 'md', v: 12 },
+  { name: 'lg', v: 16 },
+  { name: 'xl', v: 24 },
+  { name: 'pill', v: 999 },
+]
+const taraCats = [
+  { name: 'Identity', item: 'Passport expires', days: '58d', hex: '#C785F2' },
+  { name: 'Vehicle', item: 'Car insurance renewal', days: '78d', hex: '#6CA9F4' },
+  { name: 'Home', item: 'Rent agreement renewal', days: '121d', hex: '#DF7EAF' },
+  { name: 'Finance', item: 'Credit card annual fee', days: '160d', hex: '#5ED5A8' },
+]
+
+function TaraSystem() {
+  return (
+    <div className="ds ds--tara">
+      <div className="ds__head">
+        <span className="ds__title">Tara foundations</span>
+        <span className="ds__tag">Dark first · calm by default</span>
+      </div>
+      <div className="ds__grid">
+        <section className="ds__tile">
+          <span className="ds__label">Colour</span>
+          <div className="ds__keys">
+            {taraKeys.map((c) => (
+              <div key={c.hex} className="ds__key">
+                <span className="ds__swatch" style={{ background: c.hex }} />
+                <b>{c.name}</b>
+                <small>{c.hex}</small>
+              </div>
+            ))}
+          </div>
+          <div className="ds__ramp" aria-label="Orchid to plum ramp">
+            {taraRamp.map((h) => (
+              <span key={h} style={{ background: h }} />
+            ))}
+          </div>
+          <small className="ds__note">One accent. Urgency comes from the date, not from red.</small>
+        </section>
+
+        <section className="ds__tile">
+          <span className="ds__label">Type · Fraunces + Figtree</span>
+          {taraType.map((t) => (
+            <div key={t.token} className="ds__type">
+              <span
+                className={t.cls === 'serif' ? 'ds__serif' : undefined}
+                style={{ fontSize: t.size, fontWeight: t.weight, letterSpacing: t.track || 0, textTransform: t.upper ? 'uppercase' : 'none' }}
+              >
+                {t.sample}
+              </span>
+              <small>{t.token}</small>
+            </div>
+          ))}
+        </section>
+
+        <section className="ds__tile">
+          <span className="ds__label">Spacing · 4px rhythm</span>
+          <div className="ds__space">
+            {spaceScale.map((v) => (
+              <div key={v}>
+                <span style={{ width: v * 1.1 }} />
+                <small>{v}</small>
+              </div>
+            ))}
+          </div>
+          <span className="ds__label ds__label--sub">Radius</span>
+          <div className="ds__radius">
+            {taraRadius.map((r) => (
+              <div key={r.name}>
+                <span style={{ borderRadius: r.v }} />
+                <small>{r.name}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="ds__tile">
+          <span className="ds__label">Category colours</span>
+          <div className="ds__cats">
+            {taraCats.map((c) => (
+              <div key={c.name} className="ds__cat">
+                <span className="ds__cat-dot" style={{ '--c': c.hex }} />
+                <div>
+                  <b>{c.item}</b>
+                  <small>{c.name}</small>
+                </div>
+                <em style={{ color: c.hex }}>{c.days}</em>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+
 function QuestionCards({ cards, variant }) {
   return (
     <div className={`qcards qcards--${variant || 'q'}`}>
@@ -709,12 +820,21 @@ function CompTable({ t }) {
 export function StepVisual({ s }) {
   if (s.table) return <CompTable t={s.table} />
   if (s.matrix) return <MatrixTable m={s.matrix} />
+  if (s.wireframes)
+    return (
+      <div className="wfstack">
+        {s.wireframes.map((w) => (
+          <img key={w.image} src={w.image} alt={w.label} loading="lazy" />
+        ))}
+      </div>
+    )
   if (s.affinity) return <AffinityMap groups={s.affinity} />
   if (s.research) return <ResearchBoard data={s.research} />
   if (s.questions) return <QuestionCards cards={s.questions} />
   if (s.jobs) return <QuestionCards cards={s.jobs} variant="jobs" />
   if (s.compare) return <Compare data={s.compare} />
   if (s.system) return <SystemSnapshot frames={s.system} />
+  if (s.taraSystem) return <TaraSystem />
   if (s.decisions) return <DecisionTable rows={s.decisions} image={s.image} label={s.imageLabel} />
   if (s.notes) return <QuoteWall notes={s.notes} label={s.imageLabel} />
   return <Shot image={s.image} label={s.imageLabel} ratio="4 / 3" />

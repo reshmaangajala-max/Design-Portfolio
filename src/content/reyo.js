@@ -158,9 +158,14 @@ export const reyo = {
       {
         tag: 'Wireframes',
         title: 'I explored before I polished',
-        points: ['Three layouts each for the save card, the command bar and the results', 'Picked list + preview: scan on the left, decide on the right'],
+        points: ['Three greyscale layouts each for the save card and the results panel', 'Save card: save the exact moment, not the whole video', 'Results: list + preview, scan on the left, decide on the right'],
         resultLabel: 'Chose',
-        result: 'A bar anchored to your frame, so the layout itself says “I know what you’re working on”.',
+        result: 'Layouts that say “I know what you’re working on”, before any colour was added.',
+        wireframes: [
+          { image: 'images/reyo/wf-1.webp', label: 'Save card · picked' },
+          { image: 'images/reyo/wf-2.webp', label: 'Save card · simple form' },
+          { image: 'images/reyo/wf-3.webp', label: 'Results panel · picked' },
+        ],
         image: null,
         imageLabel: 'Greyscale wireframe options',
       },
@@ -246,8 +251,8 @@ export const reyo = {
       quote: '“For buttons it will be separate, for dropdown it will be separate… I can just go to buttons and search.”',
       who: 'Designer, 2.5 years',
       text: 'That one comment became Reyo’s collections: saves organised by UI part, the way a design system is.',
-      image: null,
-      imageLabel: 'Screen 3 · library organised by UI part (optional)',
+      image: 'images/reyo/library-home.webp',
+      imageLabel: 'Reyo library home · saves organised by UI part',
     },
   },
 

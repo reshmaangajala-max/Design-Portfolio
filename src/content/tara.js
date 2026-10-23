@@ -149,6 +149,7 @@ export const tara = {
         tag: 'Design system',
         points: ['Built Tara’s identity from scratch: wordmark, palette, type and card language', 'Motion that stays calm, never alarming'],
         result: 'Calm by design, because life admin is stressful enough.',
+        taraSystem: true,
         image: null,
         imageLabel: 'Tara foundations + components',
       },
