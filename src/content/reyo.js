@@ -161,11 +161,6 @@ export const reyo = {
         points: ['Three greyscale layouts each for the save card and the results panel', 'Save card: save the exact moment, not the whole video', 'Results: list + preview, scan on the left, decide on the right'],
         resultLabel: 'Chose',
         result: 'Layouts that say “I know what you’re working on”, before any colour was added.',
-        wireframes: [
-          { image: 'images/reyo/wf-1.webp', label: 'Save card · picked' },
-          { image: 'images/reyo/wf-2.webp', label: 'Save card · simple form' },
-          { image: 'images/reyo/wf-3.webp', label: 'Results panel · picked' },
-        ],
         image: null,
         imageLabel: 'Greyscale wireframe options',
       },
