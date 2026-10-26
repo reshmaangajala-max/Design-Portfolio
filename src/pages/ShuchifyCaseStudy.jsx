@@ -86,6 +86,42 @@ function Pattern() {
   )
 }
 
+
+function Approach() {
+  const a = shuchify.approach
+  if (!a) return null
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{a.eyebrow}</p>
+          <h2 className="section-title">{a.title}</h2>
+          <p className="cs-head__text">{a.sub}</p>
+        </Reveal>
+        <Reveal className="dt">
+          <div className="dt__row">
+            {a.stages.map((st, i) => (
+              <div key={st.name} className={`dt__stage ${st.next ? 'dt__stage--next' : ''}`}>
+                <div className="dt__circle">
+                  <small>{String(i + 1).padStart(2, '0')}</small>
+                  <b>{st.name}</b>
+                  {st.next && <em>Next</em>}
+                </div>
+                <ul>
+                  {st.items.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="dt__note">{a.note}</p>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 function Problem() {
   const p = shuchify.problem
   return (
@@ -185,13 +221,50 @@ function Decisions() {
   )
 }
 
-function ComingNext() {
+function Impact() {
+  const m = shuchify.impact
   return (
     <section className="cs-section">
       <div className="wrap">
-        <Reveal className="sx-soon">
-          <p className="eyebrow">Case study in progress</p>
-          <p>Next: stock logging, what diners see inside their delivery app, and what happens if a kitchen tries to cheat.</p>
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{m.eyebrow}</p>
+          <h2 className="section-title">{m.title}</h2>
+          <p className="cs-head__text">{m.sub}</p>
+        </Reveal>
+
+        <div className="sxi-shifts">
+          {m.shifts.map((x, i) => (
+            <Reveal key={x.after} delay={i * 0.08} className="sxi-shift">
+              <s>{x.before}</s>
+              <span aria-hidden="true">↓</span>
+              <b>{x.after}</b>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="sxi-sides">
+          {m.sides.map((x, i) => (
+            <Reveal key={x.who} delay={i * 0.08} className="sxi-side">
+              <span className="sxi-side__who">{x.who}</span>
+              <div className="sxi-side__today">
+                <small>Today</small>
+                <p>{x.today}</p>
+              </div>
+              <div className="sxi-side__with">
+                <small>With Shuchify</small>
+                <ul>
+                  {x.gets.map((g) => (
+                    <li key={g}>{g}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="sxi-side__gain">{x.gain}</p>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal className="sxi-close">
+          <p>{m.close}</p>
         </Reveal>
       </div>
     </section>
@@ -207,13 +280,14 @@ export default function ShuchifyCaseStudy() {
         <Behind />
         <Data />
         <Pattern />
+        <Approach />
         <Process pr={shuchify.process} />
         <Problem />
         <People />
         <Process pr={shuchify.ideation} />
         <Decisions />
         <Solution so={shuchify.solution} />
-        <ComingNext />
+        <Impact />
         <NextUp to="/work/reyo" title="Reyo" sub="The right save, at the right moment, without leaving Figma." />
       </main>
     </>

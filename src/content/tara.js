@@ -37,6 +37,20 @@ export const tara = {
     problemLabel: 'The main problem',
     problem:
       'People don’t miss renewals because they don’t care. They miss them because nothing tells them early enough, in a way they’ll actually act on.',
+    approach: {
+      eyebrow: 'My process · Double Diamond',
+      title: 'How I approached it',
+      sub: 'The brief was one line, so I first went wide to find the real problem, then narrowed down to design it.',
+      start: 'One-line brief',
+      end: 'Handover to developers',
+      halves: ['Solving the right problem', 'Solving the problem right'],
+      stages: [
+        { name: 'Discover', mode: 'Go wide', items: ['10 user interviews', '25+ survey responses', '15+ apps tested', 'Competitor matrix'] },
+        { name: 'Define', mode: 'Narrow down', items: ['Survey insights', 'How might we', 'Jobs to be done', '3 personas', 'The main problem'] },
+        { name: 'Develop', mode: 'Go wide', items: ['Insight → decision table', 'Paper sketches', 'Greyscale wireframes'] },
+        { name: 'Deliver', mode: 'Narrow down', items: ['Full UI (Material)', 'Design system', 'Handover docs'] },
+      ],
+    },
     personasLabel: 'Who it’s for',
     // CONFIRM: based on your 10 interviews (22–35, working professionals). Adjust to your real participants.
     personas: [
@@ -142,6 +156,7 @@ export const tara = {
         tag: 'Wireframes',
         points: ['Sketched capture, home and notification flows on paper first', 'Checked layouts against Android Material patterns'],
         result: 'Chose one timeline ranked by urgency, not folders by category.',
+        wirekit: 'tara',
         image: null,
         imageLabel: 'Sketches + greyscale wireframes',
       },
@@ -227,6 +242,18 @@ export const tara = {
     eyebrow: 'Where it landed',
     title: 'What I delivered',
     delivered: ['Research and competitor analysis', 'Wireframes and full UI, following Material guidelines', 'Design system and handover docs for developers'],
+  },
+
+  impact: {
+    eyebrow: 'The impact',
+    title: 'What Tara changes for people',
+    numbers: [
+      { from: '5 fields to type', to: '0', unit: 'fields', label: 'to type for a renewal', how: 'Google Reminders asks for title, date, time, repeat and notes. Tara reads them from the document' },
+      { from: 'Open app, add, fill', to: '3', unit: 'taps', label: 'from WhatsApp to saved', how: 'Share the PDF → Tara → Confirm. Counted on my capture flow' },
+      { from: 'On the due day', to: '30', unit: 'days early', label: 'first nudge', how: 'Reminders at 30, 7 and 1 day before, so there’s time to act before late fees' },
+      { from: 'Upload to a server', to: '0', unit: 'documents', label: 'leave the phone', how: 'Read on the device. 7 in 10 people I surveyed wanted full control of their data' },
+    ],
+    diff: 'Reminder apps remember what you type. Tara finds the deadline in the document, then asks before saving anything.',
   },
 
   learnings: [

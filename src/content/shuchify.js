@@ -64,6 +64,20 @@ export const shuchify = {
   // Same pinned process layout as Reyo and Tara. Each step sets its own eyebrow.
   // Quotes are real: Reddit (r/swiggy, r/Zomato), lightly trimmed, usernames left out,
   // and a Telugu TV news report, translated.
+  approach: {
+    eyebrow: 'My process · Design Thinking',
+    title: 'How I approached it',
+    sub: 'No brief and no client, just a problem in the news. With three very different users, I needed to understand people first, so I followed Design Thinking.',
+    stages: [
+      { name: 'Empathise', items: ['2026 inspection data, 5 states', 'Reddit: r/swiggy, r/Zomato', 'Telugu TV raid report', 'Food Safety Connect reviews'] },
+      { name: 'Define', items: ['Competitor matrix', 'Affinity map', '3 personas', 'The core problem'] },
+      { name: 'Ideate', items: ['How might we', 'Jobs to be done', 'Anti-cheat ideas', 'Design decisions'] },
+      { name: 'Prototype', items: ['Restaurant check-in flow', '4 screens in Figma'] },
+      { name: 'Test', items: ['With restaurant owners in Hyderabad'], next: true },
+    ],
+    note: 'Test is next. I’ll take the check-in flow to owners before designing the diner and inspector sides.',
+  },
+
   process: {
     phase: 'The research phase',
     eyebrow: 'Let’s see it from the user’s side',
@@ -263,9 +277,49 @@ export const shuchify = {
   },
 
   // The design: phone screens with annotations (same component as Tara).
+  impact: {
+    eyebrow: 'The impact',
+    title: 'If Shuchify existed tomorrow',
+    sub: 'Today, kitchen hygiene is checked in bursts and hidden from everyone who eats there. Shuchify turns it into everyday proof that all three sides can see.',
+    shifts: [
+      { before: 'Checked a few times a year, in raids', after: 'Proof any day, at random' },
+      { before: 'Diners find out after they fall sick', after: 'Diners see it before they order' },
+      { before: 'Inspectors pick kitchens by guesswork', after: 'Inspectors visit the riskiest first' },
+    ],
+    sides: [
+      {
+        who: 'Restaurant owner',
+        today: 'A surprise raid can shut the kitchen for a day, and a clean kitchen looks the same as a dirty one to customers.',
+        gets: ['A 2-minute check-in with the phone camera', 'AI points out exactly what to fix, before an inspector does', 'A hygiene badge diners can see on the menu'],
+        gain: 'Clean kitchens finally get credit, and more orders.',
+      },
+      {
+        who: 'Diner',
+        today: 'Chooses by ratings and food photos. The kitchen itself is invisible.',
+        gets: ['Hygiene score and last check-in time, right inside Swiggy or Zomato', 'Reports checked against real check-ins, not rumours', 'Report a problem in one tap from the order'],
+        gain: 'Choose with proof, not hope.',
+      },
+      {
+        who: 'Food inspector',
+        today: 'Thousands of outlets, a small team, and visits that happen in bursts.',
+        gets: ['A list ranked by risk: who to visit first', 'Skipped check-ins and diner reports raise flags early', 'Small fixes followed up by video, no trip needed'],
+        gain: 'Same team, more of the right visits.',
+      },
+    ],
+    loop: ['Owner proves', 'Diner sees and reports', 'Inspector acts', 'Owner fixes'],
+    measure: ['Check-ins done on time', 'Repeat violations per kitchen', 'Orders from badged kitchens'],
+    close: '1 in 5 food samples failed safety tests this year. Shuchify can’t cook the food, but it makes the kitchen impossible to hide.',
+  },
+
   solution: {
-    eyebrow: 'The surprise check-in',
+    eyebrow: 'For restaurant owners · the surprise check-in',
     title: 'The solution',
+    sub: 'Three people need Shuchify. I started with the restaurant owner, because every proof starts in their kitchen.',
+    scope: [
+      { label: 'Designed here', value: 'Restaurant owners', on: true },
+      { label: 'Coming next', value: 'Diners' },
+      { label: 'Coming next', value: 'Food inspectors' },
+    ],
     moments: [
       {
         label: 'Moment 01',

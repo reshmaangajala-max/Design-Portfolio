@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ReyoWireframes, { TaraWireframes } from '../components/ReyoWireframes.jsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion'
@@ -140,6 +141,44 @@ function Laptop({ image, label, fit = 'cover', pop, notes, scene }) {
 // Shows the image when there is one, otherwise a labelled drop-zone placeholder.
 // Image that opens full-size on click, so dense tables stay readable.
 // Full-screen image viewer, portalled to <body> so transformed parents can't trap it.
+
+function AnnotShot({ image, label, notes }) {
+  const [open, setOpen] = useState(false)
+  const [hot, setHot] = useState(null)
+  return (
+    <div className="ashot">
+      <div className="ashot__frame">
+        <button className="ashot__img" onClick={() => setOpen(true)} aria-label={`Enlarge: ${label}`}>
+          <img src={image} alt={label} loading="lazy" />
+        </button>
+        {notes.map((n) => (
+          <span
+            key={n.n}
+            className={`ashot__pin ${hot === n.n ? 'is-hot' : ''}`}
+            style={{ left: `${n.at.x}%`, top: `${n.at.y}%` }}
+            onMouseEnter={() => setHot(n.n)}
+            onMouseLeave={() => setHot(null)}
+          >
+            {n.n}
+          </span>
+        ))}
+      </div>
+      <ol className="ashot__notes">
+        {notes.map((n) => (
+          <li key={n.n} className={hot === n.n ? 'is-hot' : ''} onMouseEnter={() => setHot(n.n)} onMouseLeave={() => setHot(null)}>
+            <span className="ashot__num">{n.n}</span>
+            <div>
+              <b>{n.title}</b>
+              <p>{n.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {open && <Lightbox image={image} label={label} onClose={() => setOpen(false)} />}
+    </div>
+  )
+}
+
 function Lightbox({ image, label, onClose }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -244,9 +283,16 @@ export function Hero({ h = reyo.hero, visual }) {
         )}
         <motion.dl className="cs-meta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.4 }}>
           {h.meta.map((m) => (
-            <div key={m.label}>
+            <div key={m.label} className={m.items ? 'cs-meta__role' : undefined}>
               <dt>{m.label}</dt>
               <dd>{m.value}</dd>
+              {m.items && (
+                <ul className="cs-meta__did">
+                  {m.items.map((it) => (
+                    <li key={it}>{it}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </motion.dl>
@@ -346,6 +392,362 @@ function Loop() {
         <p className="loop__back">
           <span aria-hidden="true">↺</span> and every find teaches it what to bring back next time
         </p>
+      </div>
+    </section>
+  )
+}
+
+
+function Journey() {
+  const j = reyo.journey
+  if (!j) return null
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{j.eyebrow}</p>
+          <h2 className="section-title">{j.title}</h2>
+          <p className="cs-head__text">{j.sub}</p>
+        </Reveal>
+        <div className="jrny">
+          {j.stages.map((st, i) => (
+            <Reveal key={st.name} delay={i * 0.1} className={`jrny__stage jrny__stage--${i}`}>
+              <div className="jrny__top">
+                <span className="jrny__num">{String(i).padStart(2, '0')}</span>
+                <h3>{st.name}</h3>
+              </div>
+              <p className="jrny__q">{st.q}</p>
+              <p className="jrny__text">{st.text}</p>
+              <ul className="jrny__tools">
+                {st.tools.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+              {i < j.stages.length - 1 && <span className="jrny__arrow" aria-hidden="true">→</span>}
+            </Reveal>
+          ))}
+        </div>
+        <Reveal className="jrny__back">
+          <svg viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
+            <motion.path
+              d="M875 4 V30 Q875 52 853 52 H397 Q375 52 375 30 V4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray="6 7"
+              vectorEffect="non-scaling-stroke"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+            />
+            <motion.path
+              d="M366 16 L375 4 L384 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.9, duration: 0.3 }}
+            />
+          </svg>
+          <p>
+            <span aria-hidden="true">↺</span> {j.back}
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+
+function Personas() {
+  const pp = reyo.personas
+  if (!pp) return null
+  return (
+    <section className="cs-section cs-section--tint">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{pp.eyebrow}</p>
+          <h2 className="section-title">{pp.title}</h2>
+          <p className="cs-head__text">{pp.sub}</p>
+        </Reveal>
+        <div className="persona-list">
+          {pp.cards.map((c, i) => (
+            <Reveal key={c.name} delay={i * 0.08} className="prs">
+              <figure className="prs__photo">
+                {c.image ? (
+                  <img src={c.image} alt={`${c.name}, persona`} loading="lazy" />
+                ) : (
+                  <div className="prs__ph">
+                    <span>{c.initial}</span>
+                    <small>Add photo</small>
+                  </div>
+                )}
+                <figcaption>
+                  <b>{c.name}</b>
+                  <span>{c.meta}</span>
+                  <em>{c.type}</em>
+                </figcaption>
+              </figure>
+              <div className="prs__body">
+                <p className="prs__quote">“{c.quote}”</p>
+                <div className="prs__cols">
+                  <div>
+                    <span className="prs__label">Lifestyle</span>
+                    <ul>
+                      {c.lifestyle.map((x) => (
+                        <li key={x}>{x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <span className="prs__label prs__label--pain">Pain points</span>
+                    <ul>
+                      {c.pains.map((x) => (
+                        <li key={x}>{x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="prs__problem">
+                  <span className="prs__label">The problem</span>
+                  <p>{c.problem}</p>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+
+function Goals() {
+  const g = reyo.goals
+  if (!g) return null
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{g.eyebrow}</p>
+          <h2 className="section-title">{g.title}</h2>
+        </Reveal>
+        <div className="goals">
+          {g.items.map((it, i) => (
+            <Reveal key={it.label} delay={i * 0.1} className={`goal goal--${i}`}>
+              <span className="goal__label">{it.label}</span>
+              <p className="goal__text">{it.text}</p>
+              <span className="goal__measure">Measured by: {it.measure}</span>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+
+// FigJam-style flow: pill = start/end, rectangle = step, diamond = decision.
+const FLOWS = [
+  {
+    name: 'Save',
+    h: 290,
+    nodes: [
+      { id: 's1', t: 'pill', cx: 90, cy: 80, w: 156, h: 52, lines: ['Watching a tutorial'] },
+      { id: 's2', t: 'box', cx: 275, cy: 80, w: 150, h: 66, lines: ['Clicks', 'Save to Reyo'] },
+      { id: 's3', t: 'dia', cx: 445, cy: 80, w: 124, h: 100, lines: ['Signed in?'] },
+      { id: 's4', t: 'box', cx: 625, cy: 80, w: 160, h: 66, lines: ['Exact moment', 'captured'] },
+      { id: 's5', t: 'box', cx: 810, cy: 80, w: 160, h: 66, lines: ['Adds why they', 'saved it'], tag: 'optional' },
+      { id: 's6', t: 'box', cx: 990, cy: 80, w: 150, h: 66, lines: ['AI sorts it', 'by UI part'], ai: true },
+      { id: 's7', t: 'end', cx: 1140, cy: 80, w: 104, h: 52, lines: ['Saved ✓'] },
+      { id: 's8', t: 'box', cx: 445, cy: 220, w: 150, h: 56, lines: ['Quick sign-in'] },
+    ],
+    edges: [
+      { d: 'M168 80 H200' },
+      { d: 'M350 80 H383' },
+      { d: 'M507 80 H545', label: 'Yes', lx: 524, ly: 70 },
+      { d: 'M705 80 H730' },
+      { d: 'M890 80 H915' },
+      { d: 'M1065 80 H1088' },
+      { d: 'M445 130 V192', label: 'No', lx: 460, ly: 165 },
+      { d: 'M520 220 H625 V113' },
+    ],
+  },
+  {
+    name: 'Find',
+    h: 300,
+    nodes: [
+      { id: 'f1', t: 'pill', cx: 90, cy: 80, w: 156, h: 52, lines: ['Stuck mid-design'] },
+      { id: 'f2', t: 'box', cx: 275, cy: 80, w: 150, h: 66, lines: ['Opens Reyo with', 'one shortcut'] },
+      { id: 'f3', t: 'dia', cx: 445, cy: 80, w: 134, h: 108, lines: ['Let Reyo see', 'the screen?'] },
+      { id: 'f4', t: 'box', cx: 630, cy: 80, w: 170, h: 72, lines: ['Saves matched', 'to their screen'], ai: true },
+      { id: 'f5', t: 'dia', cx: 810, cy: 80, w: 118, h: 96, lines: ['Found it?'] },
+      { id: 'f6', t: 'box', cx: 985, cy: 80, w: 156, h: 72, lines: ['Jumps to the moment', 'or pastes the image'] },
+      { id: 'f7', t: 'end', cx: 1140, cy: 80, w: 104, h: 52, lines: ['Back to', 'work'] },
+      { id: 'f8', t: 'box', cx: 445, cy: 232, w: 160, h: 60, lines: ['Searches by name', 'or UI part'] },
+      { id: 'f9', t: 'box', cx: 810, cy: 232, w: 160, h: 60, lines: ['Browses the library', 'by UI part'] },
+    ],
+    edges: [
+      { d: 'M168 80 H200' },
+      { d: 'M350 80 H378' },
+      { d: 'M512 80 H545', label: 'Yes', lx: 528, ly: 70 },
+      { d: 'M715 80 H751' },
+      { d: 'M869 80 H907', label: 'Yes', lx: 888, ly: 70 },
+      { d: 'M1063 80 H1088' },
+      { d: 'M445 134 V202', label: 'No', lx: 460, ly: 172 },
+      { d: 'M525 232 H630 V116' },
+      { d: 'M798 128 V202', label: 'No', lx: 772, ly: 172 },
+      { d: 'M822 202 V128' },
+    ],
+  },
+]
+
+function FlowNode({ n }) {
+  const x = n.cx - n.w / 2
+  const y = n.cy - n.h / 2
+  const lh = 16
+  const top = n.cy - ((n.lines.length - 1) * lh) / 2 + 5
+  let shape
+  if (n.t === 'dia') {
+    shape = <polygon className="uf__dia" points={`${n.cx},${y} ${n.cx + n.w / 2},${n.cy} ${n.cx},${y + n.h} ${x},${n.cy}`} />
+  } else {
+    const r = n.t === 'box' ? 12 : n.h / 2
+    shape = <rect className={`uf__${n.t}${n.ai ? ' uf__box--ai' : ''}`} x={x} y={y} width={n.w} height={n.h} rx={r} />
+  }
+  return (
+    <g>
+      {shape}
+      <text className={`uf__txt uf__txt--${n.t}`} textAnchor="middle">
+        {n.lines.map((l, i) => (
+          <tspan key={l} x={n.cx} y={top + i * lh - (n.tag ? 6 : 0)}>
+            {l}
+          </tspan>
+        ))}
+      </text>
+      {n.tag && (
+        <text className="uf__tag" x={n.cx} y={n.cy + 26} textAnchor="middle">
+          {n.tag}
+        </text>
+      )}
+      {n.ai && (
+        <text className="uf__spark" x={x + n.w - 14} y={y + 18} textAnchor="middle">
+          ✦
+        </text>
+      )}
+    </g>
+  )
+}
+
+function UserFlow() {
+  const u = reyo.userflow
+  if (!u) return null
+  return (
+    <section className="cs-section cs-section--tint">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{u.eyebrow}</p>
+          <h2 className="section-title">{u.title}</h2>
+          <p className="cs-head__text">{u.sub}</p>
+        </Reveal>
+        <Reveal className="uf">
+          <div className="uf__legend">
+            <span><i className="uf__k uf__k--pill" /> Start / end</span>
+            <span><i className="uf__k uf__k--box" /> Step</span>
+            <span><i className="uf__k uf__k--dia" /> Decision</span>
+            <span><i className="uf__k uf__k--ai">✦</i> Reyo’s AI does it</span>
+          </div>
+          {FLOWS.map((f, i) => (
+            <div key={f.name} className="uf__flow">
+              <span className="uf__name">
+                <b>{String(i + 1).padStart(2, '0')}</b> {f.name}
+              </span>
+              <div className="uf__scroll">
+                <svg viewBox={`0 0 1200 ${f.h}`} role="img" aria-label={`${f.name} flow`}>
+                  <defs>
+                    <marker id={`uf-arrow-${i}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                      <path d="M0 0 L10 5 L0 10 z" className="uf__head" />
+                    </marker>
+                  </defs>
+                  {f.edges.map((e) => (
+                    <g key={e.d}>
+                      <path d={e.d} className="uf__edge" markerEnd={`url(#uf-arrow-${i})`} />
+                      {e.label && (
+                        <text x={e.lx} y={e.ly} className="uf__lbl" textAnchor="middle">
+                          {e.label}
+                        </text>
+                      )}
+                    </g>
+                  ))}
+                  {f.nodes.map((n) => (
+                    <FlowNode key={n.id} n={n} />
+                  ))}
+                </svg>
+              </div>
+            </div>
+          ))}
+          <p className="uf__hint">Scroll sideways to see the full flow →</p>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
+
+function InfoArch() {
+  const a = reyo.ia
+  if (!a) return null
+  const levels = ['Level 1 · Product', 'Level 2 · Area', 'Level 3 · Screen', 'Level 4 · Sub-screen']
+  return (
+    <section className="cs-section">
+      <div className="wrap">
+        <Reveal className="cs-head cs-head--center">
+          <p className="eyebrow">{a.eyebrow}</p>
+          <h2 className="section-title">{a.title}</h2>
+          <p className="cs-head__text">{a.sub}</p>
+        </Reveal>
+        <Reveal className="iat">
+          <div className="iat__legend">
+            {levels.map((l, i) => (
+              <span key={l}>
+                <i className={`iat__k iat__k--${i + 1}`} /> {l}
+              </span>
+            ))}
+            <span>
+              <i className="iat__k iat__k--info" /> What’s inside
+            </span>
+          </div>
+          <div className="iat__scroll">
+            <div className="iat__tree">
+              <div className="iat__root">{a.root}</div>
+              <div className="iat__cols" style={{ '--n': a.branches.length }}>
+                {a.branches.map((b) => (
+                  <div key={b.name} className="iat__col">
+                    <div className="iat__l2">
+                      <b>{b.name}</b>
+                      <span>{b.where}</span>
+                    </div>
+                    {[b.l3, b.l4].filter(Boolean).map((lv, k) => (
+                      <div key={lv.name} className="iat__step">
+                        <div className={`iat__node iat__node--${k + 3}`}>{lv.name}</div>
+                        <ul className={`iat__info iat__info--${k + 3}`}>
+                          {lv.info.map((x) => (
+                            <li key={x}>{x}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   )
@@ -817,17 +1219,41 @@ function CompTable({ t }) {
   )
 }
 
+
+function WireBoard({ items }) {
+  const [open, setOpen] = useState(null)
+  return (
+    <div className="wfb">
+      <span className="wfb__title">Wireframes · greyscale <em>Click any to zoom</em></span>
+      <div className="wfb__grid">
+        {items.map((w) => (
+          <button key={w.image} className={`wfb__item wfb__item--${w.area}`} onClick={() => setOpen(w)}>
+            <img src={w.image} alt={w.label} loading="lazy" />
+            <span>{w.label}</span>
+          </button>
+        ))}
+      </div>
+      {open && <Lightbox image={open.image} label={open.label} onClose={() => setOpen(null)} />}
+    </div>
+  )
+}
+
 export function StepVisual({ s }) {
   if (s.table) return <CompTable t={s.table} />
   if (s.matrix) return <MatrixTable m={s.matrix} />
   if (s.wireframes)
     return (
-      <div className="wfstack">
+      <div
+        className="wfstack"
+        style={{ gridTemplateColumns: `repeat(${Math.min(s.wireframes.length, 3)}, minmax(0, ${s.wireframes.length === 1 ? '300px' : '1fr'}))`, justifyContent: 'center' }}
+      >
         {s.wireframes.map((w) => (
           <img key={w.image} src={w.image} alt={w.label} loading="lazy" />
         ))}
       </div>
     )
+  if (s.wirekit) return s.wirekit === 'tara' ? <TaraWireframes /> : <ReyoWireframes />
+  if (s.wireboard) return <WireBoard items={s.wireboard} />
   if (s.affinity) return <AffinityMap groups={s.affinity} />
   if (s.research) return <ResearchBoard data={s.research} />
   if (s.questions) return <QuestionCards cards={s.questions} />
@@ -1003,6 +1429,17 @@ export function Solution({ so = reyo.solution }) {
         <Reveal className="cs-head cs-head--center">
           <p className="eyebrow eyebrow--light">{so.eyebrow}</p>
           <h2 className="section-title">{so.title}</h2>
+          {so.sub && <p className="cs-head__text solution__sub">{so.sub}</p>}
+          {so.scope && (
+            <div className="scope">
+              {so.scope.map((x) => (
+                <span key={x.value} className={`scope__item ${x.on ? 'is-on' : ''}`}>
+                  <small>{x.label}</small>
+                  {x.value}
+                </span>
+              ))}
+            </div>
+          )}
         </Reveal>
 
         <div className="moments">
@@ -1031,7 +1468,7 @@ export function Solution({ so = reyo.solution }) {
           ))}
 
           {so.chambers && (
-          <article className="chambers">
+          <article className="chambers chambers--device">
             <Reveal className="chambers__copy">
               <span className="moment__label">Organised by what you build</span>
               <blockquote>
@@ -1041,7 +1478,11 @@ export function Solution({ so = reyo.solution }) {
               <p className="chambers__text">{so.chambers.text}</p>
             </Reveal>
             <Reveal>
-              <Shot image={so.chambers.image} label={so.chambers.imageLabel} ratio="4 / 3" className="shot--dark" />
+              {so.chambers.device ? (
+                <Shot image={so.chambers.image} label={so.chambers.imageLabel} device={so.chambers.device} fit="cover" notes={so.chambers.notes} />
+              ) : (
+                <Shot image={so.chambers.image} label={so.chambers.imageLabel} ratio="4 / 3" className="shot--dark" />
+              )}
             </Reveal>
           </article>
           )}
@@ -1145,41 +1586,25 @@ function Outcome() {
           <p className="eyebrow">{o.eyebrow}</p>
           <h2 className="section-title">{o.title}</h2>
         </Reveal>
-        <div className="ba">
-          <Reveal className="ba__card ba__card--before">
-            <span>Before</span>
-            <p>{o.before}</p>
-          </Reveal>
-          <span className="ba__arrow" aria-hidden="true">
-            <Arrow />
-          </span>
-          <Reveal className="ba__card ba__card--after" delay={0.15}>
-            <span>After</span>
-            <p>{o.after}</p>
-          </Reveal>
+        <div className="imp">
+          {o.numbers.map((n, i) => (
+            <Reveal key={n.label} delay={i * 0.08} className="imp__card">
+              <span className="imp__from">
+                Before: <s>{n.from}</s>
+              </span>
+              <div className="imp__nums">
+                <strong>{n.to}</strong>
+                {n.unit && <em>{n.unit}</em>}
+              </div>
+              <p className="imp__label">{n.label}</p>
+              <p className="imp__how">{n.how}</p>
+            </Reveal>
+          ))}
         </div>
-        <div className="status-cols">
-          <Reveal className="status-col">
-            <h3>
-              <span className="status__dot status__dot--sm" /> Live now
-            </h3>
-            <ul>
-              {o.live.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal className="status-col" delay={0.1}>
-            <h3>
-              <span className="dot-soon" /> Coming next
-            </h3>
-            <ul>
-              {o.soon.map((x) => (
-                <li key={x}>{x}</li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
+        <Reveal className="imp__diff">
+          <span>Why it’s different</span>
+          <p>{o.diff}</p>
+        </Reveal>
       </div>
     </section>
   )
@@ -1233,7 +1658,12 @@ export default function ReyoCaseStudy() {
         <Hero />
         <Problem />
         <Loop />
+        <Journey />
+        <Personas />
         <Process />
+        <Goals />
+        <UserFlow />
+        <InfoArch />
         <Solution />
         <Validation />
         <Tradeoffs />

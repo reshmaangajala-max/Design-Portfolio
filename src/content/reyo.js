@@ -12,7 +12,11 @@ export const reyo = {
     intro:
       'Every designer has a graveyard of saved videos, images and articles, spread across apps that don’t talk to each other. Reyo saves each one with a reason, then brings back the exact moment you need, right inside your work.',
     meta: [
-      { label: 'My role', value: 'Research, product design, and building it end to end' },
+      {
+        label: 'My role',
+        value: 'Solo product designer and builder. I owned every step, from the first survey to the working MVP.',
+        items: ['User research & survey', 'Competitive analysis', 'Information architecture', 'User flows & wireframes', 'UI & interaction design', 'Design system', 'Built the MVP'],
+      },
       { label: 'Timeline', value: '5 months · ongoing' },
       { label: 'Status', value: 'Working MVP, in active development' },
     ],
@@ -51,6 +55,87 @@ export const reyo = {
       { name: 'Understand', text: 'Reyo reads what’s inside, down to the timestamp.' },
       { name: 'Organise', text: 'Sorted by what you build: buttons, forms, colour.' },
       { name: 'Find', text: 'One shortcut in Figma brings the right save back.' },
+    ],
+  },
+
+  journey: {
+    eyebrow: 'My process · Lean UX',
+    title: 'How I got to this idea',
+    sub: 'Reyo started with my own problem, not a brief. So I treated it as a guess to test: think, make, check, and loop again.',
+    stages: [
+      {
+        name: 'Spark',
+        q: 'Is this a real gap?',
+        text: 'My Instagram saves never came back when I needed them. A quick search found no tool that brings saves back while you work.',
+        tools: ['My own pain', 'Quick gap check'],
+      },
+      {
+        name: 'Think',
+        q: 'Solving the right problem',
+        text: 'I went deep: what already exists, and what designers actually struggle with.',
+        tools: ['Survey · 25 designers', 'Interviews · 5', 'Competitor matrix', 'Affinity mapping', 'Jobs to be done', 'How might we'],
+      },
+      {
+        name: 'Make',
+        q: 'Solving the problem right',
+        text: 'Every insight became one decision, then layouts, a visual system and a working build.',
+        tools: ['Insight → decision table', 'Wireframes', 'Design system', 'UI', 'Working MVP'],
+      },
+      {
+        name: 'Check',
+        q: 'Did it hold up?',
+        text: 'Put it in front of reviewers and designers. Three things changed: organise by UI part, keep “why I saved this”, start with YouTube.',
+        tools: ['ScaleHouse review · 17.5/25', 'Designer feedback'],
+      },
+    ],
+    back: 'Next loop: usability tests with 5 designers',
+  },
+
+  personas: {
+    eyebrow: 'Who I designed for',
+    title: 'Two designers, one problem',
+    sub: 'Built from the 25 survey answers and 5 interviews. Each one is a type of saver I kept meeting.',
+    cards: [
+      {
+        name: 'Ananya Rao',
+        meta: '23 · Junior UI designer at a Bangalore startup',
+        type: 'The Collector',
+        // Drop a photo at public/images/reyo/persona-ananya.webp (4:5, ~800×1000) and set image to that path.
+        image: 'images/reyo/persona-ananya.webp',
+        initial: 'A',
+        quote: 'I save everything on Instagram. I’ve never opened that folder again.',
+        lifestyle: [
+          'Learns from YouTube tutorials and Instagram carousels on her commute',
+          'Saves 10+ references a day across Instagram, Pinterest and screenshots',
+          'Works on 2–3 screens a day under tight startup deadlines',
+        ],
+        pains: [
+          'Can’t remember which app she saved something in',
+          'Screenshots folder has thousands of images with no names',
+          'Rewatches a 20-minute video to find one 30-second trick',
+        ],
+        problem: 'She saves a lot, but none of it comes back when she’s stuck in Figma, so she starts from scratch every time.',
+      },
+      {
+        name: 'Karthik Menon',
+        meta: '27 · Product designer, 2.5 years, SaaS company',
+        type: 'The Organiser',
+        // Drop a photo at public/images/reyo/persona-karthik.webp (4:5, ~800×1000) and set image to that path.
+        image: 'images/reyo/persona-karthik.webp',
+        initial: 'K',
+        quote: 'For buttons it will be separate, for dropdown it will be separate… I can just go to buttons and search.',
+        lifestyle: [
+          'Keeps neat folders in Notion and Pinterest boards by topic',
+          'Builds and maintains his team’s design system',
+          'Spends weekends saving references for upcoming projects',
+        ],
+        pains: [
+          'Organising takes longer than the actual saving',
+          'Forgets why he saved something by the time he needs it',
+          'Has to leave Figma and dig through boards mid-task',
+        ],
+        problem: 'His saves are tidy but disconnected from his work, so finding the right one still breaks his flow.',
+      },
     ],
   },
 
@@ -158,14 +243,69 @@ export const reyo = {
       {
         tag: 'Wireframes',
         title: 'I explored before I polished',
-        points: ['Three greyscale layouts each for the save card and the results panel', 'Save card: save the exact moment, not the whole video', 'Results: list + preview, scan on the left, decide on the right'],
+        points: ['Greyscale layouts for every key screen: save card, Reyo bar and results panel', 'Save card: save the exact moment, not the whole video', 'Results: list + preview, scan on the left, decide on the right'],
         resultLabel: 'Chose',
         result: 'Layouts that say “I know what you’re working on”, before any colour was added.',
+        wirekit: true,
         image: null,
         imageLabel: 'Greyscale wireframe options',
       },
     ],
   },
+
+  goals: {
+    eyebrow: 'After the research',
+    title: 'So I set two goals',
+    items: [
+      { label: 'User goal', text: 'Find the right save in seconds, without leaving Figma.', measure: 'Time to find a save' },
+      { label: 'Business goal', text: 'Make Reyo a daily habit, so designers keep coming back. That’s what a paid plan is built on.', measure: 'Weekly returning users' },
+    ],
+  },
+
+  userflow: {
+    eyebrow: 'User flow',
+    title: 'Two moments: saving and finding',
+    sub: 'Saving takes one click. Finding happens right where you design, with no app switching.',
+  },
+
+  ia: {
+    eyebrow: 'Information architecture',
+    title: 'Organised by what you build',
+    sub: 'Saves are grouped by category (the C in LATCH): buttons, colour, onboarding. Not by the app you saved them from.',
+    root: 'Reyo',
+    branches: [
+      {
+        name: 'Save',
+        where: 'Browser extension',
+        l3: { name: 'Save card', info: ['Exact timestamp', 'Why I saved it', 'Source + title', 'AI tags by UI part'] },
+        l4: { name: 'Sign-in', info: ['First save only', 'One tap'] },
+      },
+      {
+        name: 'Library',
+        where: 'Web app',
+        l3: { name: 'Home', info: ['Search', 'Recent saves', 'All saves by topic', 'Filters'] },
+        l4: { name: 'Gathering dust', info: ['Unopened in a month', 'Tidy up'] },
+      },
+      {
+        name: 'Collections',
+        where: 'By UI part',
+        l3: { name: 'Category', info: ['Components', 'Foundations', 'Patterns'] },
+        l4: { name: 'Group page', info: ['e.g. Buttons', 'Videos, images, links', 'AI summary'] },
+      },
+      {
+        name: 'Find',
+        where: 'Panel in your design tool',
+        l3: { name: 'Results', info: ['Matched saves', 'Why it matched', 'Search by name or UI part'] },
+        l4: { name: 'Preview', info: ['Jump to timestamp', 'Paste image', 'Your past note'] },
+      },
+      {
+        name: 'Settings',
+        where: 'Account',
+        l3: { name: 'Settings page', info: ['Sources', 'Privacy & screen access', 'Profile & shortcut'] },
+      },
+    ],
+  },
+
 
   solution: {
     eyebrow: 'The solution',
@@ -248,6 +388,12 @@ export const reyo = {
       text: 'That one comment became Reyo’s collections: saves organised by UI part, the way a design system is.',
       image: 'images/reyo/library-home.webp',
       imageLabel: 'Reyo library home · saves organised by UI part',
+      device: 'laptop',
+      notes: [
+        { title: 'Sorted like a design system', text: 'Components, Foundations, Patterns.', at: { x: 22.1, y: 29.6 }, box: { x: 71, y: 6, side: 'right', w: 34 } },
+        { title: 'Search by UI part', text: 'Type “dropdown”, get every dropdown save.', at: { x: 60, y: 27 }, box: { x: 71, y: 38, side: 'right', w: 34 } },
+        { title: 'One-line AI summary', text: 'What a group teaches, without opening it.', at: { x: 45.6, y: 69.8 }, box: { x: 71, y: 70, side: 'right', w: 34 } },
+      ],
     },
   },
 
@@ -280,12 +426,15 @@ export const reyo = {
   },
 
   outcome: {
-    eyebrow: 'The outcome',
-    title: 'Full circle',
-    before: 'Scrubbing a 25-minute video, tab after tab, hoping you remember roughly where the part was.',
-    after: 'One shortcut. Your own note, the exact 44 seconds, and you never left Figma.',
-    live: ['Save from YouTube with timestamps and an AI note', 'Library running on my own 171 saved videos', 'Figma overlay that finds saves from your frame'],
-    soon: ['Pinterest and screenshot imports', 'A Claude connector to bring saves into AI chats', 'Desktop app for the shortcut anywhere'],
+    eyebrow: 'The impact',
+    title: 'What Reyo changes for a designer',
+    numbers: [
+      { from: '8 steps', to: '3', unit: 'steps', label: 'to find a saved tutorial', how: 'Counted on my flows: YouTube Saved vs Reyo' },
+      { from: '25 min', to: '44 sec', unit: '', label: 'of video to watch', how: 'A real save from my library: jump to the moment, skip the rest' },
+      { from: '4.9 apps', to: '1', unit: 'place', label: 'for every save', how: 'Survey average of apps used to save, now one library by UI part' },
+      { from: '2 app switches', to: '0', unit: 'app switches', label: 'while designing', how: 'No leaving your design tool and coming back. The save comes to your screen' },
+    ],
+    diff: 'The tools I compared help you organise saves. None bring the right one back, at the exact moment, while you design. That’s the gap Reyo fills.',
   },
 
   learnings: [
